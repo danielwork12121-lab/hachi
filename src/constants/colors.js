@@ -1,0 +1,35 @@
+/**
+ * Pet Bazi design system colors.
+ * Deep midnight blue, cream, jade, muted gold.
+ */
+export const colors = {
+  background: '#0f1729',
+  backgroundSoft: '#162238',
+  card: '#1e2d47',
+  cardCream: '#f5f0e8',
+  cardDark: 'rgba(30, 45, 71, 0.85)',
+  text: '#f5f0e8',
+  textMuted: '#a8b4c4',
+  textDark: '#1e2d47',
+  gold: '#c9a962',
+  goldMuted: '#a88b4a',
+  jade: '#5a8f7b',
+  jadeMuted: '#4a7562',
+  accent: '#c9a962',
+  border: 'rgba(201, 169, 98, 0.25)',
+  glow: 'rgba(201, 169, 98, 0.15)',
+  glowStrong: 'rgba(201, 169, 98, 0.22)',
+  glowNavy: 'rgba(72, 108, 168, 0.12)',
+  goldLight: '#e2c87a',
+  goldDeep: '#a88b4a',
+  star: 'rgba(245, 240, 232, 0.6)',
+  chipBg: 'rgba(22, 34, 56, 0.72)',
+  chipBorder: 'rgba(201, 169, 98, 0.32)',
+  glassPanel: 'rgba(18, 28, 48, 0.72)',
+  glassInput: 'rgba(15, 23, 41, 0.55)',
+  ink: '#121a2a',
+  surface: '#1a2438',
+  surfaceElevated: 'rgba(22, 32, 50, 0.92)',
+  borderSubtle: 'rgba(168, 180, 196, 0.14)',
+  cream: '#f5f0e8',
+};

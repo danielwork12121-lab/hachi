@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Hachi",
+    "slug": "pet-bazi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f1729"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "bundler": "metro",
+      "backgroundColor": "#0f1729"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petbazi.app"
+    },
+    "android": {
+      "package": "com.petbazi.app"
+    }
+  }
+}
