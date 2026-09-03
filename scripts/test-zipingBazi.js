@@ -39,6 +39,24 @@ async function main() {
   assert(result.pillars.month.stem === '甲' && result.pillars.month.branch === '寅', 'month pillar');
   assert(__test__.getHourBranch(17, 5) === '酉', '17:05 hour branch');
 
+  // Regression: early-January dates before that year's own 小寒 (~Jan 5-6)
+  // must still land in 子 month, carried over from 大雪 the prior December
+  // -- not 丑. (Was wrong for every Jan 1 - 小寒 date before this fix.)
+  console.log('\n--- Regression: 2024-01-03 (before 小寒) should be 子 month ---');
+  const beforeXiaohan = computeZipingBazi({ birthDate: '2024-01-03', birthTime: '12:00' });
+  console.log(beforeXiaohan.pillars.month);
+  assert(beforeXiaohan.success === true, 'expected success (before 小寒)');
+  assert(beforeXiaohan.pillars.month.branch === '子', '2024-01-03 month branch should be 子 (before 小寒)');
+
+  // Regression: a birth just after a solar-term crossing must flip to the
+  // new month immediately, not ~8 hours late. 小寒 2024 falls at roughly
+  // 04:44 Beijing time on Jan 6; 05:00 is minutes after it.
+  console.log('\n--- Regression: 2024-01-06 05:00 (just after 小寒) should be 丑 month ---');
+  const justAfterXiaohan = computeZipingBazi({ birthDate: '2024-01-06', birthTime: '05:00' });
+  console.log(justAfterXiaohan.pillars.month);
+  assert(justAfterXiaohan.success === true, 'expected success (just after 小寒)');
+  assert(justAfterXiaohan.pillars.month.branch === '丑', '2024-01-06 05:00 month branch should be 丑 (just after 小寒, not 8h-delayed 子)');
+
   if (process.exitCode === 1) {
     console.error('\nSome assertions failed.');
   } else {

@@ -2,7 +2,7 @@
  * Traditional Zi Ping BaZi (Four Pillars / Eight Characters).
  * Beijing civil time as entered; no true solar time or longitude correction.
  */
-import { parseOptionalTime } from './inputParsing';
+import { parseOptionalTime } from './inputParsing.js';
 
 export const DEFAULT_BIRTH_TIME = '12:00';
 export const DEFAULT_BIRTH_LOCATION = 'Chengdu, China';
@@ -203,8 +203,14 @@ function beijingDateTimeToMs(year, month, day, hour, minute, second = 0) {
 }
 
 function jdToBeijingMs(jd) {
-  const utcMs = (jd - 2440587.5) * 86400000;
-  return utcMs + 8 * 3600000;
+  // NOTE: this must return a true, real-world UTC ms timestamp (the same
+  // convention beijingDateTimeToMs uses), not the Beijing wall-clock value
+  // re-encoded as if it were UTC. The previous "+ 8 * 3600000" added an
+  // extra 8-hour offset on top of the already-correct UTC conversion,
+  // which pushed every solar-term boundary 8 hours later than its real
+  // moment -- so a birth in the ~8 hours right after a real month/year
+  // crossover was silently assigned to the previous month or year.
+  return (jd - 2440587.5) * 86400000;
 }
 
 function findSolarTermJd(year, termIndex) {
@@ -363,18 +369,28 @@ function getYearPillar(baziYear) {
 }
 
 function getMonthBranchIndex(beijingMs, calendarYear) {
-  const boundaries = MONTH_START_TERM_INDEX.map((termIdx, monthIdx) => {
-    let termYear = calendarYear;
-    if (termIdx === 0) {
-      termYear = calendarYear + 1;
-    }
-    return {
-      monthIdx,
-      ms: getSolarTermBeijingMs(termYear, termIdx),
-    };
-  }).sort((a, b) => a.ms - b.ms);
+  // Each of the 12 month-branches starts at its own 节 (jie) solar term.
+  // 丑 (the last month, index 11) starts at 小寒, which falls in January --
+  // so it needs two boundary instances: 小寒 of calendarYear itself (for
+  // birth dates in January before that year's 立春) and 小寒 of
+  // calendarYear + 1 (for birth dates in Nov/Dec, whose 丑 month hasn't
+  // started yet within calendarYear). Without the first instance, any
+  // date from Jan 1 up to 小寒 (~Jan 5-6) was wrongly bucketed into 丑
+  // instead of the correct 子 (continuing from 大雪 the previous December).
+  const boundaries = MONTH_START_TERM_INDEX.map((termIdx, monthIdx) => ({
+    monthIdx,
+    ms: getSolarTermBeijingMs(calendarYear, termIdx),
+  }));
+  boundaries.push({
+    monthIdx: 11,
+    ms: getSolarTermBeijingMs(calendarYear + 1, 0),
+  });
+  boundaries.sort((a, b) => a.ms - b.ms);
 
-  let branchIdx = MONTH_BRANCHES.length - 1;
+  // If beijingMs is earlier than every boundary above, it's before this
+  // calendarYear's own 小寒 -- still in 子, carried over from 大雪 the
+  // previous December.
+  let branchIdx = MONTH_BRANCHES.indexOf('子');
   for (let i = boundaries.length - 1; i >= 0; i -= 1) {
     if (beijingMs >= boundaries[i].ms) {
       branchIdx = boundaries[i].monthIdx;
