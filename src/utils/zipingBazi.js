@@ -411,7 +411,11 @@ function getMonthPillar(yearStem, monthBranchIdx) {
 
 function getHourBranch(hour, minute) {
   const totalMinutes = hour * 60 + minute;
-  if (totalMinutes >= 0 && totalMinutes < 60) return '子';
+  // 子 hour wraps midnight (23:00-01:00). Handle both halves with one check
+  // so 23:00-23:59 doesn't fall through to the last daytime bucket below --
+  // it was previously mislabeled 亥 (21:00-23:00), one hour branch too early,
+  // which also shifted the hour *stem* since getHourPillar derives from it.
+  if (totalMinutes >= 1380 || totalMinutes < 60) return '子';
   if (totalMinutes >= 60 && totalMinutes < 180) return '丑';
   if (totalMinutes >= 180 && totalMinutes < 300) return '寅';
   if (totalMinutes >= 300 && totalMinutes < 420) return '卯';
@@ -422,7 +426,7 @@ function getHourBranch(hour, minute) {
   if (totalMinutes >= 900 && totalMinutes < 1020) return '申';
   if (totalMinutes >= 1020 && totalMinutes < 1140) return '酉';
   if (totalMinutes >= 1140 && totalMinutes < 1260) return '戌';
-  if (totalMinutes >= 1260 && totalMinutes <= 1439) return '亥';
+  if (totalMinutes >= 1260 && totalMinutes < 1380) return '亥';
   return '子';
 }
 

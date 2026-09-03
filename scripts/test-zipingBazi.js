@@ -57,6 +57,27 @@ async function main() {
   assert(justAfterXiaohan.success === true, 'expected success (just after 小寒)');
   assert(justAfterXiaohan.pillars.month.branch === '丑', '2024-01-06 05:00 month branch should be 丑 (just after 小寒, not 8h-delayed 子)');
 
+  // Regression: 23:00-23:59 is the first half of 子 hour (子初), which wraps
+  // midnight into 01:00. getHourBranch previously extended the 21:00-23:00
+  // (亥) bucket all the way to 23:59, mislabeling this window 亥 instead of
+  // 子 -- and since getHourPillar derives the hour *stem* from the branch,
+  // the stem was wrong too, not just the branch.
+  console.log('\n--- Regression: 23:xx hour branch should be 子, not 亥 ---');
+  console.log('23:00 ->', __test__.getHourBranch(23, 0));
+  console.log('23:59 ->', __test__.getHourBranch(23, 59));
+  console.log('22:59 ->', __test__.getHourBranch(22, 59), '(still 亥, unaffected)');
+  assert(__test__.getHourBranch(23, 0) === '子', '23:00 hour branch should be 子');
+  assert(__test__.getHourBranch(23, 59) === '子', '23:59 hour branch should be 子');
+  assert(__test__.getHourBranch(22, 59) === '亥', '22:59 hour branch should still be 亥');
+
+  // Regression: full hour pillar (stem + branch), not just the branch helper,
+  // for a birth in the previously-mislabeled 23:00-23:59 window.
+  console.log('\n--- Regression: 2024-06-15 23:30 hour pillar ---');
+  const lateNight = computeZipingBazi({ birthDate: '2024-06-15', birthTime: '23:30' });
+  console.log(lateNight.pillars.hour);
+  assert(lateNight.success === true, 'expected success (23:30 birth)');
+  assert(lateNight.pillars.hour.branch === '子', '2024-06-15 23:30 hour branch should be 子');
+
   if (process.exitCode === 1) {
     console.error('\nSome assertions failed.');
   } else {
