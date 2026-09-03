@@ -22,20 +22,28 @@ The app uses simplified, Bazi-inspired logic (not traditional Bazi) and is posit
 ├── App.js                    # Root: navigation + screens
 ├── app.json                  # Expo config
 ├── src/
-│   ├── components/           # Reusable UI
-│   │   ├── Button.js
-│   │   ├── Card.js
-│   │   ├── CompatibilityMeter.js
-│   │   ├── DailyInsight.js
-│   │   ├── DateField.js
-│   │   ├── ElementBadge.js
-│   │   ├── SectionBlock.js
-│   │   └── TimeField.js
+│   ├── components/           # Reusable UI (forms, mascot, cosmic backdrop, pillar/reading display)
+│   │   ├── Button.js, Card.js, FormSection.js, PremiumFormPanel.js, FeatureChip.js
+│   │   ├── DateField(.web).js, TimeField(.web).js, SpeciesSelector.js
+│   │   ├── ElementBadge.js, CompatibilityMeter.js, DailyInsight.js
+│   │   ├── DayPillarColumn.js, ClickablePillarColumn.js, PillarGlyphsStack.js
+│   │   ├── ReadingPageContent.js, ReadingSectionCard.js, ReportOrnament.js
+│   │   ├── DogMascot.js, WelcomeMascot.js, PetAvatar.js
+│   │   ├── CosmicScreenBackdrop.js, StarFieldBackground.js, WelcomeHeroBackdrop.js
+│   │   ├── FateTileSpinner.js, RitualLoadingRing.js
+│   │   └── ScreenContent.js, ScreenHeader.js, SectionBlock.js
 │   ├── constants/
-│   │   ├── colors.js         # Design system colors
-│   │   └── elements.js       # Five elements, cycles, symbols
-│   ├── data/
-│   │   └── mockData.js       # Sample pets for testing
+│   │   ├── colors.js, typography.js, layout.js, formStyles.js  # Design system
+│   │   ├── elements.js        # Five elements, cycles, symbols
+│   │   ├── kanjiDisplay.js     # Stem/branch kanji rendering
+│   │   ├── petSpecies.js       # Supported species list
+│   │   └── readingLayout.js
+│   ├── data/                  # Copy libraries, keyed by pillar (year/month/day/hour)
+│   │   ├── mockData.js                    # Sample pets for testing
+│   │   ├── dayPillarLibrary.js
+│   │   ├── monthPillarYoungGrowthLibrary.js
+│   │   ├── yearPillarChildhoodLibrary.js
+│   │   └── hourPillarInnerSelfLibrary.js
 │   ├── screens/
 │   │   ├── WelcomeScreen.js
 │   │   ├── PetInputScreen.js
@@ -45,12 +53,24 @@ The app uses simplified, Bazi-inspired logic (not traditional Bazi) and is posit
 │   │   ├── CompatibilityScreen.js
 │   │   └── ShareCardScreen.js
 │   └── utils/
-│       ├── baziLogic.js      # Simplified Bazi-inspired logic
-│       ├── copyGenerator.js  # Interpretation and compatibility copy
-│       └── storage.js        # AsyncStorage helpers (last pet, last reading)
-├── assets/                   # Add icon.png, splash.png, adaptive-icon.png for builds
+│       ├── baziLogic.js, zipingBazi.js, pillarElements.js  # Bazi-inspired logic
+│       ├── copyGenerator.js, pillarStageCopy.js, readingDisplay.js  # Copy assembly
+│       ├── monthPillarYoungGrowthReading.js, yearPillarChildhoodReading.js
+│       ├── hourPillarInnerSelfReading.js
+│       ├── inputParsing.js    # Birthday/time parsing + validation
+│       └── storage.js         # AsyncStorage helpers (last pet, last reading)
+├── scripts/                   # One-off build/test tooling (see "Tooling scripts" below)
+├── assets/                    # App icons + Hachi mascot art (see assets/README.md)
 └── package.json
 ```
+
+## Tooling scripts
+
+`scripts/` holds one-off Node/Python utilities, run manually (not part of `npm start`):
+
+- **`build-year-pillar-childhood-library.js`** / **`build-month-pillar-young-growth-library.js`** — generate the corresponding `src/data/*Library.js` copy files.
+- **`test-zipingBazi.js`** — quick manual checks for `src/utils/zipingBazi.js`.
+- **`process_hachi_mascot.py`** — cleans/exports the Hachi mascot art (transparency, static PNG, running sprite sheet) into `assets/`. Requires Python with `Pillow`/`numpy` (see `.venv-img`) and currently reads its source export from a hardcoded local path — update `SOURCE` in the script if running on a different machine.
 
 ## How to run
 
