@@ -200,6 +200,11 @@ export const HOUR_PILLAR_INNER_SELF_LIBRARY = {
     greatestAccomplishment: "solved problems nobody realized existed.",
     wantsYouToKnow: "I knew how the cabinet opened the entire time.",
   },
+  "庚午": {
+    reading: "庚 is forged steel and 午 is blazing fire.",
+    greatestAccomplishment: "guarded the front door like it was a matter of national importance.",
+    wantsYouToKnow: "I was not being loud, I was being thorough.",
+  },
   "庚申": {
     reading: "庚 is forged steel and 申 is clever metal.",
     greatestAccomplishment: "found loopholes in systems that should have been foolproof.",
@@ -224,6 +229,11 @@ export const HOUR_PILLAR_INNER_SELF_LIBRARY = {
     reading: "辛 is polished metal and 巳 is rising fire.",
     greatestAccomplishment: "remained beautiful despite repeatedly making questionable decisions.",
     wantsYouToKnow: "the dramatic entrance was always intentional.",
+  },
+  "辛未": {
+    reading: "辛 is refined metal and 未 is warm summer earth.",
+    greatestAccomplishment: "found the single most comfortable spot in every room, immediately.",
+    wantsYouToKnow: "the good blanket was a requirement, not a preference.",
   },
   "辛酉": {
     reading: "辛 is refined metal and 酉 is polished metal.",
