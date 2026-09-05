@@ -1,7 +1,7 @@
 /**
  * Verifies the four stem+branch personality libraries (Day, Hour, Month,
- * Year) each cover all 60 valid sexagenary combinations and that their
- * required text fields are non-empty.
+ * Year) each cover all 60 valid sexagenary combinations and that every
+ * text field the UI actually reads from each library is non-empty.
  *
  * Regression: HOUR_PILLAR_INNER_SELF_LIBRARY was missing "庚午" and "辛未"
  * (58/60 entries) -- any pet whose computed Hour Pillar landed on one of
@@ -10,6 +10,15 @@
  * not find this Hour Pillar yet" fallback message and the raw combo text.
  * The source docx (src/data/Raw/innerself-60 pillars.docx) itself skips
  * straight from 庚辰 to 辛巳, confirming the gap predates conversion.
+ *
+ * The required-field lists below previously only checked each library's
+ * `reading` field, missing every other field the screens render (e.g.
+ * DAY_PILLAR_LIBRARY's `attachmentLevel`/`troublemakingScore` stats card
+ * in PetReadingScreen.js, or MONTH/YEAR's five and four extra copy
+ * fields in monthPillarYoungGrowthReading.js / yearPillarChildhoodReading.js).
+ * A single blank field in any of those would silently render as an empty
+ * row instead of failing loudly here, so the lists now mirror exactly
+ * what each screen/reading-builder consumes.
  *
  * Run: node scripts/test-pillar-libraries.js
  */
@@ -67,14 +76,62 @@ async function main() {
   const { MONTH_PILLAR_YOUNG_GROWTH_LIBRARY } = await import(`file://${monthPath}`);
   const { YEAR_PILLAR_CHILDHOOD_LIBRARY } = await import(`file://${yearPath}`);
 
-  checkLibraryCoverage('DAY_PILLAR_LIBRARY', DAY_PILLAR_LIBRARY, ['reading']);
+  // Fields below mirror what each screen/reading-builder actually renders:
+  // - Day: PetReadingScreen.js CORE_STATS + readingDisplay.js getHeroBondLabel
+  //   (attachmentLevel), plus `reading`.
+  // - Hour: hourPillarInnerSelfReading.js's fields array + `reading`.
+  // - Month: monthPillarYoungGrowthReading.js's fields array + `reading`.
+  // - Year: yearPillarChildhoodReading.js's fields array + `reading`.
+  checkLibraryCoverage('DAY_PILLAR_LIBRARY', DAY_PILLAR_LIBRARY, [
+    'reading',
+    'extroversion',
+    'likelyCatBreed',
+    'likelyDogBreed',
+    'troublemakingScore',
+    'attachmentLevel',
+  ]);
   checkLibraryCoverage('HOUR_PILLAR_INNER_SELF_LIBRARY', HOUR_PILLAR_INNER_SELF_LIBRARY, [
     'reading',
     'greatestAccomplishment',
     'wantsYouToKnow',
   ]);
-  checkLibraryCoverage('MONTH_PILLAR_YOUNG_GROWTH_LIBRARY', MONTH_PILLAR_YOUNG_GROWTH_LIBRARY, ['reading']);
-  checkLibraryCoverage('YEAR_PILLAR_CHILDHOOD_LIBRARY', YEAR_PILLAR_CHILDHOOD_LIBRARY, ['reading']);
+  checkLibraryCoverage('MONTH_PILLAR_YOUNG_GROWTH_LIBRARY', MONTH_PILLAR_YOUNG_GROWTH_LIBRARY, [
+    'reading',
+    'favoriteActivity',
+    'energyLevel',
+    'attractedTo',
+    'impressesBy',
+    'secretWant',
+  ]);
+  checkLibraryCoverage('YEAR_PILLAR_CHILDHOOD_LIBRARY', YEAR_PILLAR_CHILDHOOD_LIBRARY, [
+    'reading',
+    'favoriteToy',
+    'animalMom',
+    'animalDad',
+    'humanOwner',
+  ]);
+
+  // Regression: the day pillar's attachmentLevel/troublemakingScore feed a
+  // "X/5" score parser (readingDisplay.js parseAttachmentScore); a value in
+  // any other shape silently falls back to a raw, unstyled label instead of
+  // a proper "n/5" bond chip.
+  console.log('\n--- Regression: Day Pillar score fields are all "n/5" ---');
+  const combos = allSexagenaryCombos();
+  const badScoreFormat = [];
+  for (const combo of combos) {
+    const entry = DAY_PILLAR_LIBRARY[combo];
+    if (!entry) continue;
+    if (!/^[1-5]\/5$/.test(entry.attachmentLevel || '')) {
+      badScoreFormat.push(`${combo}.attachmentLevel=${entry.attachmentLevel}`);
+    }
+    if (!/^[1-5]\/5$/.test(entry.troublemakingScore || '')) {
+      badScoreFormat.push(`${combo}.troublemakingScore=${entry.troublemakingScore}`);
+    }
+  }
+  assert(
+    badScoreFormat.length === 0,
+    `DAY_PILLAR_LIBRARY has score fields not shaped like "n/5": ${JSON.stringify(badScoreFormat)}`
+  );
 
   // Regression: the two previously-missing Hour Pillar combos now resolve
   // to real, non-fallback content.
