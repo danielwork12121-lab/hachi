@@ -130,6 +130,12 @@ export default function PetInputScreen({ navigation }) {
                 setSpecies(DEFAULT_PREVIEW.species);
                 setPetBirthDate(DEFAULT_PREVIEW.petBirthDate);
                 setPetBirthTime(DEFAULT_PREVIEW.petBirthTime ?? null);
+                // Loading a sample overwrites the fields directly (bypassing
+                // DateField/TimeField's own onValidationChange), so any error
+                // left over from a previous invalid keystroke must be cleared
+                // here too — otherwise Continue stays disabled on valid data.
+                setPetBirthDateError('');
+                setPetBirthTimeError('');
               }}
             >
               <Text style={styles.sampleBtnText}>Try sample pet (Luna)</Text>

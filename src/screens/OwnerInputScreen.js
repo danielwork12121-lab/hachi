@@ -108,6 +108,12 @@ export default function OwnerInputScreen({ navigation, route }) {
                 setOwnerName(DEFAULT_PREVIEW.ownerName);
                 setOwnerBirthDate(DEFAULT_PREVIEW.ownerBirthDate);
                 setOwnerBirthTime(DEFAULT_PREVIEW.ownerBirthTime ?? null);
+                // See PetInputScreen's sample handler: overwriting the date/time
+                // state directly skips DateField/TimeField's onValidationChange,
+                // so a stale error from an earlier bad keystroke must be cleared
+                // explicitly or Generate Reading stays disabled on valid data.
+                setOwnerBirthDateError('');
+                setOwnerBirthTimeError('');
               }}
             >
               <Text style={styles.sampleBtnText}>Try sample (Alex)</Text>
