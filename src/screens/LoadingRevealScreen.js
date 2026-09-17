@@ -124,7 +124,7 @@ export default function LoadingRevealScreen({ navigation, route }) {
         petName: params.petName,
         species,
         petBirthDate,
-        petBirthTime: petBirthHour,
+        petBirthTime: petBirthTime,
         petBirthLocation,
         ownerName: params.ownerName,
         ownerBirthDate,
