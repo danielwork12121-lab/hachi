@@ -1,6 +1,8 @@
-# Pet Bazi
+# Hachi
 
-A mobile-first MVP app that generates Bazi-inspired personality readings for your pet and compatibility between you and your pet. Built for an American audience with a modern, elegant, slightly mystical feel.
+A mobile-first app that generates Bazi-inspired personality readings for your pet, and a compatibility reading between you and your pet. Built for an American audience with a modern, elegant, slightly mystical feel.
+
+Hachi is two pieces: a **React Native / Expo client** and a small **Node/Express backend** in [`server/`](server/) that turns a computed chart into reading prose with an LLM. (The Expo slug is still `pet-bazi` for historical reasons.)
 
 ## Product summary
 
@@ -12,9 +14,44 @@ The app uses simplified, Bazi-inspired logic (not traditional Bazi) and is posit
 
 ## Tech stack
 
+**Client**
+
 - **React Native** with **Expo** (~51)
 - **React Navigation** (native stack)
 - **AsyncStorage** for persisting the last pet profile and last reading
+
+**Backend** (`server/`)
+
+- **Node 20+** and **Express 4**, ES modules, no build step
+- Calls an LLM (Volcengine Ark / Doubao) to write the reading prose
+- `node:test` suite — 30 tests, no network and no API key required to run them
+
+## Backend
+
+The API key is the reason the backend exists. Anything bundled into a React Native
+app can be extracted from the app, so the key has to live on a server rather than in
+the client.
+
+Two design rules the service holds to, both covered by tests:
+
+- **The LLM never does Bazi math.** `server/src/chart.js` imports `computeZipingBazi`
+  from `src/utils/zipingBazi.js` — the same function the client calls — so the two can
+  never disagree about a pillar. The model only receives a finished chart and writes prose.
+- **It always answers.** If the LLM is unconfigured, times out, errors, or returns
+  something unparseable, the service falls back to the hand-written pillar libraries the
+  app already ships, and every response reports which path produced it
+  (`"source": "llm" | "fallback"`), so a fallback is never passed off as a generated reading.
+
+```bash
+cd server
+npm install
+cp .env.example .env     # Ark credentials (optional — it falls back without them)
+npm start                # http://localhost:8787
+npm test                 # 30 tests
+```
+
+Endpoints, request/response shapes, and the full fallback-reason list are in
+[`server/README.md`](server/README.md).
 
 ## Project structure
 
@@ -59,6 +96,16 @@ The app uses simplified, Bazi-inspired logic (not traditional Bazi) and is posit
 │       ├── hourPillarInnerSelfReading.js
 │       ├── inputParsing.js    # Birthday/time parsing + validation
 │       └── storage.js         # AsyncStorage helpers (last pet, last reading)
+├── server/                    # Node/Express reading backend (see "Backend" above)
+│   ├── src/
+│   │   ├── app.js             # Express app factory: POST /reading, GET /health
+│   │   ├── chart.js           # Wraps the client's own computeZipingBazi
+│   │   ├── llm.js             # Ark client: timeout, one retry, typed errors
+│   │   ├── prompt.js          # Prompt assembly from a computed chart
+│   │   ├── reading.js         # Parse/validate the model's JSON, choose llm vs fallback
+│   │   ├── fallback.js        # Deterministic reading from the shipped pillar libraries
+│   │   └── server.js          # Entry point
+│   └── test/                  # 30 node:test tests
 ├── scripts/                   # One-off build/test tooling (see "Tooling scripts" below)
 ├── assets/                    # App icons + Hachi mascot art (see assets/README.md)
 └── package.json
@@ -104,7 +151,14 @@ The app uses simplified, Bazi-inspired logic (not traditional Bazi) and is posit
 6. **Compatibility** → Score, bond label, explanation, advice, “Why your pet may feel attached to you”; “Share result”
 7. **Share card** → Styled card (cream, shareable); “Screenshot to share” / “Done”
 
-## Logic (simplified Bazi-inspired)
+## Logic
+
+Pillar math lives in `src/utils/zipingBazi.js` (sexagenary year/month/day/hour pillars,
+stem and branch derivation, five-element relations). The server imports that same module,
+so the client and the backend compute identical charts.
+
+The compatibility and element-summary layer on top of it is deliberately simplified and
+Bazi-*inspired* rather than traditional:
 
 - **Pet main element**: from birth month (mapped across Wood, Fire, Earth, Metal, Water).
 - **Pet secondary element**: from birth day (day mod 5).
@@ -124,11 +178,14 @@ Details and comments are in `src/utils/baziLogic.js` and `src/constants/elements
 - **Typography**: Serif (e.g. Georgia) for titles, sans-serif for body.
 - **Components**: Rounded cards, element badges, compatibility meter, section blocks, primary/secondary/ghost buttons.
 
-## Possible next steps (post-MVP)
+## Possible next steps
 
-- Paid unlock (e.g. deeper readings or extra pets); UI is structured so a paywall can be added later.
-- Login/sync (not required for MVP).
-- More precise Bazi or astrology logic if desired.
+- Wire the client's reading screens to `POST /reading` so the shipped app uses the backend
+  instead of the local copy libraries.
+- Paid unlock (e.g. deeper readings or extra pets); the UI is structured so a paywall can be
+  added later.
+- Login/sync (not required for the current build).
+- More precise Bazi or astrology logic on top of the existing pillar engine.
 
 ## License
 
